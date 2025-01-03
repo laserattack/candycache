@@ -2,10 +2,15 @@ package simplecache
 
 import (
 	"errors"
-	"fmt"
 	"sync"
 	"time"
 )
+
+// Структура виде ключ-значение для возвращения списка элементов кэша с их ключами.
+type KeyItemPair struct {
+	Key  string
+	Item Item
+}
 
 // Элемент в кэше - это данные и время их жизни.
 type Item struct {
@@ -122,11 +127,27 @@ func (c *Cache) Count() int {
 }
 
 // Печать всех элементов кэша (ключ и время уничтожения).
-func (c *Cache) Print() {
+func (c *Cache) List() []KeyItemPair {
 	c.RLock()
 	defer c.RUnlock()
 
+	// Создаем срез для хранения пар ключ-значение
+	items := make([]KeyItemPair, 0, len(c.storage))
+
+	// Заполняем срез парами ключ-значение
 	for key, item := range c.storage {
-		fmt.Printf("Key: %s, DestroyTimestamp: %d\n", key, item.destroyTimestamp)
+		items = append(items, KeyItemPair{Key: key, Item: item})
 	}
+
+	return items
+}
+
+// Возвращает данные элемента кэша.
+func (i *Item) Data() interface{} {
+	return i.data
+}
+
+// Возвращает момент смерти элемента кэша.
+func (i *Item) DestroyTimestamp() int64 {
+	return i.destroyTimestamp
 }
