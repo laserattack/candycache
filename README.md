@@ -1,4 +1,4 @@
-# :candy: Candy Cache ![Go](https://img.shields.io/badge/go-%2300ADD8.svg?style=for-the-badge&logo=go&logoColor=white)
+# :candy: Candy Cache  ![Go](https://img.shields.io/badge/go-%2300ADD8.svg?style=for-the-badge&logo=go&logoColor=white)
 
 **CandyCache** — это простой и эффективный кэш на языке Go, который позволяет хранить данные с ограниченным временем жизни (TTL). 
 
