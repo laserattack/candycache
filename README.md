@@ -87,8 +87,8 @@ cache.Flush() // Удаляет все элементы кэша, не смот�
 Для получения списка всех элементов в кэше используйте метод **List**:
 
 ```go
-	items := cache.List()
-	for _, item := range items {
-		fmt.Printf("Ключ: %s, Значение: %v, Момент устаревания: %d\n", item.Key, item.Item.Data(), item.Item.DestroyTimestamp())
-	}
+items := cache.List()
+for _, item := range items {
+    fmt.Printf("Ключ: %s, Значение: %v, Момент устаревания: %d\n", item.Key, item.Item.Data(), item.Item.DestroyTimestamp())
+}
 ```
