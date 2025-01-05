@@ -2,6 +2,8 @@ package simplecache
 
 import (
 	"errors"
+	"fmt"
+	"reflect"
 	"sync"
 	"time"
 )
@@ -140,6 +142,72 @@ func (c *Cache) List() []KeyItemPair {
 	}
 
 	return items
+}
+
+// Вернет размер всего кэша в байтах.
+func (c *Cache) Size() int {
+	c.RLock()
+	defer c.RUnlock()
+
+	size := 0
+	for key, item := range c.storage {
+		size += isize(key) + isize(item.data) + isize(item.destroyTimestamp)
+	}
+
+	return size
+}
+
+// ПОДДЕРЖИВАЕМЫЕ ТИПЫ:
+// Bool +
+// Int +
+// Int8 +
+// Int16 +
+// Int32 +
+// Int64 +
+// Uint +
+// Uint8 +
+// Uint16 +
+// Uint32 +
+// Uint64 +
+// Uintptr +
+// Float32 +
+// Float64 +
+// Complex64 +
+// Complex128 +
+// Array +
+// Func +
+// Map +
+// Slice +
+// String +
+// Struct
+func isize(i interface{}) int {
+	if i == nil {
+		return 0
+	}
+	val := reflect.ValueOf(i)
+	kind := val.Kind()
+	fmt.Println("val =", val, "kind =", kind)
+	size := 0
+	switch kind {
+	case reflect.Slice, reflect.Array, reflect.String:
+		len := val.Len()
+		for i := 0; i < len; i++ {
+			size += isize(val.Index(i).Interface())
+		}
+		return size
+	case reflect.Map:
+		for _, key := range val.MapKeys() {
+			size += isize(key.Interface()) + isize(val.MapIndex(key).Interface())
+		}
+		return size
+	case reflect.Struct:
+		for i := 0; i < val.NumField(); i++ {
+			size += isize(val.Field(i).Interface())
+		}
+		return size
+	default:
+		return int(reflect.TypeOf(i).Size())
+	}
 }
 
 // Возвращает данные элемента кэша.
