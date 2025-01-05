@@ -1,10 +1,10 @@
 # ![Go](https://img.shields.io/badge/go-%2300ADD8.svg?style=for-the-badge&logo=go&logoColor=white) Candy Cache :candy:
 
-**CandyCache** — это простой и эффективный кэш на языке Go, который позволяет хранить данные с ограниченным временем жизни (TTL). 
+**CandyCache** — это простой и эффективный кэш на языке Go, который позволяет хранить данные с ограниченным временем жизни (**TTL**). 
 
 # Установка
 
-Для использования CandyCache в вашем проекте, установите его, используя ```go get git.hikan.ru/serr/candycache```, далее просто добавьте в блок импорта.
+Для использования CandyCache в вашем проекте, установите его, используя ```go get git.hikan.ru/serr/candycache```, далее просто добавьте ```git.hikan.ru/serr/candycache``` в блок импорта.
 
 # Основные возможности
 
