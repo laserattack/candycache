@@ -1,4 +1,4 @@
-package simplecache
+package candycache
 
 import (
 	"errors"
@@ -29,7 +29,7 @@ type Cache struct {
 
 // NewCache создает новый экземпляр Cache с интервалом очистки cleanupInterval.
 // Если cleanupInterval < 0, то кэш не будет очищаться автоматически.
-func NewCache(cleanupInterval time.Duration) *Cache {
+func Cacher(cleanupInterval time.Duration) *Cache {
 	cache := &Cache{
 		storage:         make(map[string]Item),
 		cleanupInterval: cleanupInterval,
