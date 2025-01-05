@@ -2,7 +2,6 @@ package simplecache
 
 import (
 	"errors"
-	"fmt"
 	"reflect"
 	"sync"
 	"time"
@@ -186,7 +185,6 @@ func isize(i interface{}) int {
 	}
 	val := reflect.ValueOf(i)
 	kind := val.Kind()
-	fmt.Println("val =", val, "kind =", kind)
 	size := 0
 	switch kind {
 	case reflect.Slice, reflect.Array, reflect.String:
