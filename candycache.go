@@ -27,7 +27,7 @@ type Cache struct {
 	cleanupInterval time.Duration   // Интервал очистки хранилища в наносекундах
 }
 
-// NewCache создает новый экземпляр Cache с интервалом очистки cleanupInterval.
+// Создает новый экземпляр Cache с интервалом очистки cleanupInterval.
 // Если cleanupInterval < 0, то кэш не будет очищаться автоматически.
 func Cacher(cleanupInterval time.Duration) *Cache {
 	cache := &Cache{
