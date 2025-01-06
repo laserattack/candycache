@@ -10,7 +10,6 @@ import (
 )
 
 // JSON структура для создания/загрузки дампов
-
 type Dump struct {
 	Key              string      `json:"key"`
 	DestroyTimestamp int64       `json:"destroyTimestamp"`
