@@ -12,6 +12,7 @@
 - Кэшем можно управлять вручную.
 - Конкурентный доступ к данным возможен благодаря мьютексам.
 - Кэш может хранить данные любых типов.
+- Можно создавать и загружать дампы кэша.
 
 # Использование
 
@@ -126,3 +127,65 @@ map, struct, func
 **И композициями этих типов**.
 
 В противном случае значение может быть не точным.
+
+# Пример использования
+
+```go
+package main
+
+import (
+	"fmt"
+	"log"
+	"main/candycache"
+	"os"
+	"time"
+)
+
+type Person struct {
+	Name    string
+	Age     int
+	Hobbies []string
+}
+
+func main() {
+	cache := candycache.Cacher(10 * time.Minute) // Создаем кэш с интервалом очистки 10 минут
+
+	cache.Set("key1", "string", 5*time.Minute)
+	cache.Set("key2", 2, 10*time.Minute)
+	cache.Set("key7", -2.1231, 10*time.Minute)
+	cache.Set("key3", []string{"string1", "string2"}, 10*time.Minute)
+	cache.Set("key4", map[string]int{"a": 1, "b": 2}, 10*time.Minute)
+	cache.Set("key5", Person{Name: "Alice", Age: 30, Hobbies: []string{"reading", "swimming"}}, 10*time.Minute)
+	cache.Set("key6", []Person{
+		{Name: "Bob", Age: 25, Hobbies: []string{"coding", "gaming"}},
+		{Name: "Charlie", Age: 35, Hobbies: []string{"hiking", "photography"}},
+	}, 10*time.Minute)
+
+	file, err := os.Create("cache_dump.json")
+	if err != nil {
+		log.Fatal("error creating file: ", err)
+	}
+
+	if err := cache.Save(file); err != nil { // Сохранение кэша в файл
+		log.Fatal("error saving cache: ", err)
+	}
+	file.Close()
+
+	cache.Flush() // Удаление всех элементов из кэша
+
+	file, err = os.Open("cache_dump.json")
+	if err != nil {
+		log.Fatal("error opening file: ", err)
+	}
+
+	if err := cache.Load(file); err != nil { // Загрузка кэша из файла
+		fmt.Println("error load cache:", err)
+	}
+
+	list := cache.List() // Получаю список элементов кэша
+
+	for _, i := range list {
+		fmt.Println(i.Key, i.Item.Data(), i.Item.DestroyTimestamp())
+	}
+}
+```
