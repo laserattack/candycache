@@ -3,12 +3,19 @@ package candycache
 import (
 	"encoding/json"
 	"errors"
-	"fmt"
 	"io"
 	"reflect"
 	"sync"
 	"time"
 )
+
+// JSON структура для создания/загрузки дампов
+
+type Dump struct {
+	Key              string      `json:"key"`
+	DestroyTimestamp int64       `json:"destroyTimestamp"`
+	Data             interface{} `json:"data"`
+}
 
 // Структура виде ключ-значение для возвращения списка элементов кэша с их ключами.
 type KeyItemPair struct {
@@ -202,11 +209,7 @@ func (c *Cache) Save(w io.Writer) error {
 	encoder := json.NewEncoder(w)
 	first := true
 	for key, item := range c.storage {
-		entry := struct {
-			Key              string      `json:"key"`
-			DestroyTimestamp int64       `json:"destroyTimestamp"`
-			Data             interface{} `json:"data"`
-		}{
+		entry := Dump{
 			Key:              key,
 			DestroyTimestamp: item.destroyTimestamp,
 			Data:             item.data,
@@ -239,18 +242,11 @@ func (c *Cache) Load(r io.Reader) error {
 	decoder := json.NewDecoder(r)
 
 	if _, err := decoder.Token(); err != nil {
-		if err == io.EOF {
-			return fmt.Errorf("файл пустой или имеет неправильный формат")
-		}
 		return err
 	}
 
 	for decoder.More() {
-		var entry struct {
-			Key              string      `json:"key"`
-			DestroyTimestamp int64       `json:"destroyTimestamp"`
-			Data             interface{} `json:"data"`
-		}
+		entry := Dump{}
 
 		if err := decoder.Decode(&entry); err != nil {
 			return err
