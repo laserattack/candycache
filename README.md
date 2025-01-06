@@ -215,13 +215,13 @@ if err := cache.Save(&buffer); err != nil { // Сохранение бэкапа
     log.Fatal("error saving cache: ", err)
 }
 
-cache.Set("key1", "lost", 10*time.Minute)
-cache.Set("key2", "lost", 10*time.Minute)
-cache.Set("key3", "lost", 10*time.Minute)
-cache.Set("key4", "lost", 10*time.Minute)
-cache.Set("key5", "lost", 10*time.Minute)
-cache.Set("key6", "lost", 10*time.Minute)
-cache.Set("key7", "lost", 10*time.Minute)
+cache.Set("key1", "lost", -1)
+cache.Set("key2", "lost", -1)
+cache.Set("key3", "lost", -1)
+cache.Set("key4", "lost", -1)
+cache.Set("key5", "lost", -1)
+cache.Set("key6", "lost", -1)
+cache.Set("key7", "lost", -1)
 
 if err := cache.Load(&buffer); err != nil { // Восстановление бэкапа
     log.Fatal("error loading cache: ", err)
