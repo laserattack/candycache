@@ -109,7 +109,7 @@ func (c *Cache) Delete(key string) error {
 // key - ключ.
 // data - данные.
 // ttl - время жизни элемента (time to life) в наносекундах.
-func (c *Cache) Add(key string, data interface{}, ttl time.Duration) {
+func (c *Cache) Set(key string, data interface{}, ttl time.Duration) {
 	c.Lock()
 	defer c.Unlock()
 
