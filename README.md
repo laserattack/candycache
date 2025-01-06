@@ -140,7 +140,6 @@ map, struct, func
 ### Сценарий 1
 
 ```go
-
 type Person struct {
 	Name    string
 	Age     int
@@ -191,7 +190,6 @@ for _, i := range list {
 ### Сценарий 2
 
 ```go
-
 type Person struct {
 	Name    string
 	Age     int
