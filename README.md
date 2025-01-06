@@ -131,61 +131,43 @@ map, struct, func
 # Пример использования
 
 ```go
-package main
+cache := candycache.Cacher(10 * time.Minute) // Создаем кэш с интервалом очистки 10 минут
 
-import (
-	"fmt"
-	"log"
-	"main/candycache"
-	"os"
-	"time"
-)
+cache.Set("key1", "string", 5*time.Minute)
+cache.Set("key2", 2, 10*time.Minute)
+cache.Set("key7", -2.1231, 10*time.Minute)
+cache.Set("key3", []string{"string1", "string2"}, 10*time.Minute)
+cache.Set("key4", map[string]int{"a": 1, "b": 2}, 10*time.Minute)
+cache.Set("key5", Person{Name: "Alice", Age: 30, Hobbies: []string{"reading", "swimming"}}, 10*time.Minute)
+cache.Set("key6", []Person{
+    {Name: "Bob", Age: 25, Hobbies: []string{"coding", "gaming"}},
+    {Name: "Charlie", Age: 35, Hobbies: []string{"hiking", "photography"}},
+}, 10*time.Minute)
 
-type Person struct {
-	Name    string
-	Age     int
-	Hobbies []string
+file, err := os.Create("cache_dump.json")
+if err != nil {
+    log.Fatal("error creating file: ", err)
 }
 
-func main() {
-	cache := candycache.Cacher(10 * time.Minute) // Создаем кэш с интервалом очистки 10 минут
+if err := cache.Save(file); err != nil { // Сохранение кэша в файл
+    log.Fatal("error saving cache: ", err)
+}
+file.Close()
 
-	cache.Set("key1", "string", 5*time.Minute)
-	cache.Set("key2", 2, 10*time.Minute)
-	cache.Set("key7", -2.1231, 10*time.Minute)
-	cache.Set("key3", []string{"string1", "string2"}, 10*time.Minute)
-	cache.Set("key4", map[string]int{"a": 1, "b": 2}, 10*time.Minute)
-	cache.Set("key5", Person{Name: "Alice", Age: 30, Hobbies: []string{"reading", "swimming"}}, 10*time.Minute)
-	cache.Set("key6", []Person{
-		{Name: "Bob", Age: 25, Hobbies: []string{"coding", "gaming"}},
-		{Name: "Charlie", Age: 35, Hobbies: []string{"hiking", "photography"}},
-	}, 10*time.Minute)
+cache.Flush() // Удаление всех элементов из кэша
 
-	file, err := os.Create("cache_dump.json")
-	if err != nil {
-		log.Fatal("error creating file: ", err)
-	}
+file, err = os.Open("cache_dump.json")
+if err != nil {
+    log.Fatal("error opening file: ", err)
+}
 
-	if err := cache.Save(file); err != nil { // Сохранение кэша в файл
-		log.Fatal("error saving cache: ", err)
-	}
-	file.Close()
+if err := cache.Load(file); err != nil { // Загрузка кэша из файла
+    fmt.Println("error load cache:", err)
+}
 
-	cache.Flush() // Удаление всех элементов из кэша
+list := cache.List() // Получаю список элементов кэша
 
-	file, err = os.Open("cache_dump.json")
-	if err != nil {
-		log.Fatal("error opening file: ", err)
-	}
-
-	if err := cache.Load(file); err != nil { // Загрузка кэша из файла
-		fmt.Println("error load cache:", err)
-	}
-
-	list := cache.List() // Получаю список элементов кэша
-
-	for _, i := range list {
-		fmt.Println(i.Key, i.Item.Data(), i.Item.DestroyTimestamp())
-	}
+for _, i := range list {
+    fmt.Println(i.Key, i.Item.Data(), i.Item.DestroyTimestamp())
 }
 ```
