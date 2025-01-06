@@ -128,7 +128,7 @@ map, struct, func
 
 В противном случае значение может быть не точным.
 
-# Пример использования
+# Пример использования №1
 
 ```go
 cache := candycache.Cacher(10 * time.Minute) // Создаем кэш с интервалом очистки 10 минут
@@ -163,6 +163,47 @@ if err != nil {
 
 if err := cache.Load(file); err != nil { // Загрузка кэша из файла
     fmt.Println("error load cache:", err)
+}
+
+list := cache.List() // Получаю список элементов кэша
+
+for _, i := range list {
+    fmt.Println(i.Key, i.Item.Data(), i.Item.DestroyTimestamp())
+}
+```
+
+# Пример использования №2
+
+```go
+cache := candycache.Cacher(10 * time.Minute) // Создаем кэш с интервалом очистки 10 минут
+
+cache.Set("key1", "string", 5*time.Minute)
+cache.Set("key2", 2, 10*time.Minute)
+cache.Set("key7", -2.1231, 10*time.Minute)
+cache.Set("key3", []string{"string1", "string2"}, 10*time.Minute)
+cache.Set("key4", map[string]int{"a": 1, "b": 2}, 10*time.Minute)
+cache.Set("key5", Person{Name: "Alice", Age: 30, Hobbies: []string{"reading", "swimming"}}, 10*time.Minute)
+cache.Set("key6", []Person{
+    {Name: "Bob", Age: 25, Hobbies: []string{"coding", "gaming"}},
+    {Name: "Charlie", Age: 35, Hobbies: []string{"hiking", "photography"}},
+}, 10*time.Minute)
+
+var buffer bytes.Buffer
+
+if err := cache.Save(&buffer); err != nil { // Сохранение бэкапа
+    log.Fatal("error saving cache: ", err)
+}
+
+cache.Set("key1", "lost", 10*time.Minute)
+cache.Set("key2", "lost", 10*time.Minute)
+cache.Set("key3", "lost", 10*time.Minute)
+cache.Set("key4", "lost", 10*time.Minute)
+cache.Set("key5", "lost", 10*time.Minute)
+cache.Set("key6", "lost", 10*time.Minute)
+cache.Set("key7", "lost", 10*time.Minute)
+
+if err := cache.Load(&buffer); err != nil { // Восстановление бэкапа
+    log.Fatal("error loading cache: ", err)
 }
 
 list := cache.List() // Получаю список элементов кэша
