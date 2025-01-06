@@ -1,7 +1,10 @@
 package candycache
 
 import (
+	"encoding/json"
 	"errors"
+	"fmt"
+	"io"
 	"reflect"
 	"sync"
 	"time"
@@ -35,8 +38,6 @@ func Cacher(cleanupInterval time.Duration) *Cache {
 		cleanupInterval: cleanupInterval,
 	}
 
-	// Запускаем Garbage Collector если интервал очистки больше 0
-	// Иначе (если он отрицательный) кэш будет жить до ручного вызова Cleanup
 	if cleanupInterval > 0 {
 		go cache.gc(cleanupInterval)
 	}
@@ -83,7 +84,6 @@ func (c *Cache) Get(key string) (interface{}, error) {
 
 	item, found := c.storage[key]
 
-	// Элемент не найден в кэше
 	if !found {
 		return nil, errors.New("key not found")
 	}
@@ -100,7 +100,6 @@ func (c *Cache) IsExpired(key string) (bool, error) {
 
 	item, found := c.storage[key]
 
-	// Элемент не найден в кэше
 	if !found {
 		return false, errors.New("key not found")
 	}
@@ -189,6 +188,85 @@ func (c *Cache) Size() int {
 	}
 
 	return size
+}
+
+// Save сохраняет кэш в io.Writer в формате JSON, записывая каждый элемент по отдельности.
+func (c *Cache) Save(w io.Writer) error {
+	c.RLock()
+	defer c.RUnlock()
+
+	if _, err := w.Write([]byte("[\n")); err != nil {
+		return err
+	}
+
+	encoder := json.NewEncoder(w)
+	first := true
+	for key, item := range c.storage {
+		entry := struct {
+			Key              string      `json:"key"`
+			DestroyTimestamp int64       `json:"destroyTimestamp"`
+			Data             interface{} `json:"data"`
+		}{
+			Key:              key,
+			DestroyTimestamp: item.destroyTimestamp,
+			Data:             item.data,
+		}
+
+		if !first {
+			if _, err := w.Write([]byte(",\n")); err != nil {
+				return err
+			}
+		}
+		first = false
+
+		if err := encoder.Encode(entry); err != nil {
+			return err
+		}
+	}
+
+	if _, err := w.Write([]byte("]")); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// Load загружает кэш из io.Reader в формате JSON.
+func (c *Cache) Load(r io.Reader) error {
+	c.Lock()
+	defer c.Unlock()
+
+	decoder := json.NewDecoder(r)
+
+	if _, err := decoder.Token(); err != nil {
+		if err == io.EOF {
+			return fmt.Errorf("файл пустой или имеет неправильный формат")
+		}
+		return err
+	}
+
+	for decoder.More() {
+		var entry struct {
+			Key              string      `json:"key"`
+			DestroyTimestamp int64       `json:"destroyTimestamp"`
+			Data             interface{} `json:"data"`
+		}
+
+		if err := decoder.Decode(&entry); err != nil {
+			return err
+		}
+
+		c.storage[entry.Key] = Item{
+			destroyTimestamp: entry.DestroyTimestamp,
+			data:             entry.Data,
+		}
+	}
+
+	if _, err := decoder.Token(); err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func isize(i interface{}) int {
