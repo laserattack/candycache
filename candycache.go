@@ -60,7 +60,7 @@ func (c *Cache) Cleanup() {
 	defer c.Unlock()
 
 	for key, item := range c.storage {
-		if item.destroyTimestamp <= time.Now().Unix() {
+		if item.destroyTimestamp <= time.Now().UnixNano() {
 			delete(c.storage, key)
 		}
 	}
@@ -91,6 +91,27 @@ func (c *Cache) Get(key string) (interface{}, bool) {
 	return item.data, true
 }
 
+// Определяет является ли элемент устаревшим.
+// Вторым аргументов возвращается есть элемент в кэше или нет.
+// Первым - устаревший элемент или нет.
+func (c *Cache) IsExpired(key string) (bool, bool) {
+	c.RLock()
+	defer c.RUnlock()
+
+	item, found := c.storage[key]
+
+	// Элемент не найден в кэше
+	if !found {
+		return false, false
+	}
+
+	if item.destroyTimestamp <= time.Now().UnixNano() {
+		return true, true
+	} else {
+		return false, true
+	}
+}
+
 // Удаление элемента по ключу.
 func (c *Cache) Delete(key string) error {
 	c.Lock()
@@ -114,7 +135,7 @@ func (c *Cache) Set(key string, data interface{}, ttl time.Duration) {
 	defer c.Unlock()
 
 	c.storage[key] = Item{
-		destroyTimestamp: time.Now().Unix() + int64(ttl.Seconds()),
+		destroyTimestamp: time.Now().UnixNano() + int64(ttl),
 		data:             data,
 	}
 }
@@ -127,17 +148,31 @@ func (c *Cache) Count() int {
 	return len(c.storage)
 }
 
-// Печать всех элементов кэша (ключ и время уничтожения).
+// Возвращает список всех элементов кэша.
 func (c *Cache) List() []KeyItemPair {
 	c.RLock()
 	defer c.RUnlock()
 
-	// Создаем срез для хранения пар ключ-значение
-	items := make([]KeyItemPair, 0, len(c.storage))
+	items := []KeyItemPair{}
 
-	// Заполняем срез парами ключ-значение
 	for key, item := range c.storage {
 		items = append(items, KeyItemPair{Key: key, Item: item})
+	}
+
+	return items
+}
+
+// Возвращает список всех устаревших элементов кэша.
+func (c *Cache) ExpiredList() []KeyItemPair {
+	c.RLock()
+	defer c.RUnlock()
+
+	items := []KeyItemPair{}
+
+	for key, item := range c.storage {
+		if item.destroyTimestamp <= time.Now().UnixNano() {
+			items = append(items, KeyItemPair{Key: key, Item: item})
+		}
 	}
 
 	return items
@@ -216,4 +251,13 @@ func (i *Item) Data() interface{} {
 // Возвращает момент смерти элемента кэша.
 func (i *Item) DestroyTimestamp() int64 {
 	return i.destroyTimestamp
+}
+
+// Определяет является ли элемент устаревшим.
+func (i *Item) IsExpired() bool {
+	if i.destroyTimestamp <= time.Now().UnixNano() {
+		return true
+	} else {
+		return false
+	}
 }
