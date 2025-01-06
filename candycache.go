@@ -191,29 +191,6 @@ func (c *Cache) Size() int {
 	return size
 }
 
-// ПОДДЕРЖИВАЕМЫЕ ТИПЫ:
-// Bool +
-// Int +
-// Int8 +
-// Int16 +
-// Int32 +
-// Int64 +
-// Uint +
-// Uint8 +
-// Uint16 +
-// Uint32 +
-// Uint64 +
-// Uintptr +
-// Float32 +
-// Float64 +
-// Complex64 +
-// Complex128 +
-// Array +
-// Func +
-// Map +
-// Slice +
-// String +
-// Struct
 func isize(i interface{}) int {
 	if i == nil {
 		return 0
