@@ -137,9 +137,16 @@ map, struct, func
 
 В модуле присутствуют методы **Save** и **Load**, позволяющие создавать и загружать дампы. Эти методы удовлетворяют интерфейсам **io.Write**r и **io.Reader** соответственно, т.е. их можно использовать и для работы с файлами, и для работы с буфферами. 
 
-### Сохранение дампа в файл + восстановление
+### Сценарий 1
 
 ```go
+
+type Person struct {
+	Name    string
+	Age     int
+	Hobbies []string
+}
+
 cache := candycache.Cacher(10 * time.Minute) // Создаем кэш с интервалом очистки 10 минут
 
 cache.Set("key1", "string", 5*time.Minute)
@@ -181,9 +188,16 @@ for _, i := range list {
 }
 ```
 
-### Сохранение дампа в буффер + восстановление
+### Сценарий 2
 
 ```go
+
+type Person struct {
+	Name    string
+	Age     int
+	Hobbies []string
+}
+
 cache := candycache.Cacher(10 * time.Minute) // Создаем кэш с интервалом очистки 10 минут
 
 cache.Set("key1", "string", 5*time.Minute)
