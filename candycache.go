@@ -77,7 +77,7 @@ func (c *Cache) Flush() {
 }
 
 // Получение элемента из кэша по ключу.
-func (c *Cache) Get(key string) (interface{}, bool) {
+func (c *Cache) Get(key string) (interface{}, error) {
 	c.RLock()
 	defer c.RUnlock()
 
@@ -85,16 +85,16 @@ func (c *Cache) Get(key string) (interface{}, bool) {
 
 	// Элемент не найден в кэше
 	if !found {
-		return nil, false
+		return nil, errors.New("key not found")
 	}
 
-	return item.data, true
+	return item.data, nil
 }
 
 // Определяет является ли элемент устаревшим.
 // Вторым аргументов возвращается есть элемент в кэше или нет.
 // Первым - устаревший элемент или нет.
-func (c *Cache) IsExpired(key string) (bool, bool) {
+func (c *Cache) IsExpired(key string) (bool, error) {
 	c.RLock()
 	defer c.RUnlock()
 
@@ -102,13 +102,13 @@ func (c *Cache) IsExpired(key string) (bool, bool) {
 
 	// Элемент не найден в кэше
 	if !found {
-		return false, false
+		return false, errors.New("key not found")
 	}
 
 	if item.destroyTimestamp <= time.Now().UnixNano() {
-		return true, true
+		return true, nil
 	} else {
-		return false, true
+		return false, nil
 	}
 }
 
